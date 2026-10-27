@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="application-name" content="走马观花 · Zouma">
+  <meta name="description" content="走马观花（Zouma）是以对话为核心、由 AI 教学 Agent 驱动的开源自适应学习系统。行于途中，思入深处。">
+  <title>走马观花 · Zouma | Conversation-Native Learning</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="/static/app.js" type="module"></script>
+</head>
+<body>
+  <a class="skip-link" href="#lesson">跳到当前课程</a>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="课程与导入">
+      <a class="brand" href="/" aria-label="走马观花 Zouma 首页"><span class="brand-mark" aria-hidden="true">◖◗</span><span class="brand-copy"><span class="brand-name">走马观花</span><small>Conversation-Native Learning</small></span></a>
+      <div class="workspace-label">你的学习空间 <span class="local-dot">本地</span></div>
+      <button id="open-import" class="button primary full">＋ 导入学习材料</button>
+      <div class="sidebar-heading"><h2>我的课程</h2><span id="course-count">0</span></div>
+      <nav id="course-list" class="course-list" aria-label="已保存课程"><p class="muted small">正在读取课程…</p></nav>
+      <div class="sidebar-foot"><span class="small strong">对话展开，学习持续</span><p>课程与问答保存在本机。<br>从每次讨论，继续深入。</p><span id="provider-label" class="mode-tag">正在连接</span></div>
+    </aside>
+
+    <main id="lesson" class="main-content" tabindex="-1">
+      <header class="topbar"><span>ZOUMA · CONVERSATION-NATIVE LEARNING</span><span class="topbar-note">行于途中，思入深处。</span></header>
+      <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+      <section id="welcome" class="welcome">
+        <div class="eyebrow">走马观花 · 对话原生自适应学习系统</div>
+        <h1>人在行走，<br><em>思想也能深入。</em></h1>
+        <p class="welcome-copy">以实时对话为入口，让 AI 成为私人导师与思维伙伴。带着材料提问、质疑，用自己的话解释；讨论展开后，再从保存的位置继续学习。</p>
+        <div class="welcome-actions"><button id="welcome-import" class="button primary">导入我的材料 <span aria-hidden="true">↗</span></button><button id="start-demo" class="button secondary">试听：线性回归</button></div>
+        <div class="welcome-illustration" aria-hidden="true"><div class="wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span>行于途中，思入深处。</span></div>
+        <div class="feature-row"><article><span>01</span><h2>对话带动思考</h2><p>围绕课程连续追问、提出反例，用自己的语言建立理解。</p></article><article><span>02</span><h2>讨论连接主线</h2><p>导入材料并保留依据；讨论与课程位置分开保存，让学习可以接续。</p></article><article><span>03</span><h2>理解连接实践</h2><p>对照原文、整理知识联系；适合的课程可导出 Python 练习，继续验证想法。</p></article></div>
+        <p class="demo-note">演示模式使用预设内容与原文摘录，方便验证流程。接入模型后可生成讲解与回答。</p>
+      </section>
+
+      <section id="workspace" hidden>
+        <div class="lesson-heading"><div><div class="eyebrow">当前课程 <span id="course-mode" class="mode-tag"></span></div><h1 id="course-title"></h1><p id="course-subtitle" class="muted"></p></div><a id="download-notebook" class="button secondary compact" download>导出 Notebook ↗</a></div>
+        <div class="study-grid">
+          <section class="lesson-card" aria-labelledby="segment-title">
+            <div class="card-topline"><span id="segment-number" class="eyebrow"></span><span id="playback-status" class="status-pill">已暂停</span></div>
+            <h2 id="segment-title"></h2><div id="concept-tags" class="concept-tags"></div>
+            <div id="transcript" class="transcript" aria-label="当前讲解，点击句子可跳转"></div>
+            <div class="player">
+              <div class="voice-panel" aria-label="实时语音学习">
+                <button id="voice-connect" class="button primary full" disabled>连接语音，继续学习</button>
+                <p id="voice-status" class="voice-status" role="status" aria-live="polite">正在读取语音配置…</p>
+                <button id="voice-resume" class="button secondary full" hidden>回到刚才的句子，继续课程 →</button>
+                <p id="voice-caption" class="voice-caption" aria-live="polite" hidden></p>
+                <details id="voice-history-details" hidden><summary>已保存的语音讨论</summary><div id="voice-history"></div></details>
+                <details class="voice-diagnostics"><summary>语音状态与恢复说明</summary><p>恢复粒度为一句。完整播放且语音转录与讲稿核对一致才推进；被打断或断线时从当前句重听。数字或公式的口述差异可能使校验暂停，可以重试或使用设备朗读。切换页面或进入后台会暂停，重新连接后继续。</p><p>连接后，你的声音与当前课程上下文会发送到配置的语音服务。建议佩戴耳机以减少回声。点击「结束语音并保存」可关闭麦克风，课程完成后会自动关闭。</p><p id="voice-metrics">尚无本次延迟测量。</p></details>
+              </div>
+              <div class="player-progress"><span id="progress-label"></span><span id="save-state">进度已保存</span></div><progress id="course-progress" max="100" value="0" aria-label="课程进度"></progress>
+              <div class="player-controls"><button id="previous" class="icon-button" aria-label="上一段" title="上一段">↤</button><button id="play-pause" class="play-button" aria-label="开始播放"><span id="play-icon" aria-hidden="true">▶</span><span id="play-label">开始听</span></button><button id="next" class="icon-button" aria-label="下一段" title="下一段">↦</button><label class="speed-control"><span class="sr-only">朗读速度</span><select id="rate"><option value="0.8">0.8×</option><option value="1" selected>1.0×</option><option value="1.2">1.2×</option><option value="1.5">1.5×</option></select></label></div>
+              <button id="interrupt" class="interrupt-button">有个疑问，停一下 <span aria-hidden="true">↗</span></button>
+              <p id="audio-note" class="player-note">设备朗读为降级方式 · 不支持说话打断 · 可用文字提问</p>
+            </div>
+          </section>
+          <aside class="outline-card" aria-labelledby="outline-heading"><div class="sidebar-heading"><h2 id="outline-heading">学习主线</h2><span id="outline-count"></span></div><ol id="outline" class="outline"></ol><div class="outline-footer"><span class="small strong">留在你的学习进度里</span><p>暂停、提问、重新打开，<br>都可以从保存的位置继续。</p></div></aside>
+          <section class="question-card" aria-labelledby="question-heading"><div class="section-heading"><div><div class="eyebrow">PAUSE & EXPLORE</div><h2 id="question-heading">在这里，把疑问说清楚。</h2></div><span id="bookmark-label" class="small muted"></span></div><div id="qa-list" class="qa-list" aria-live="polite"></div><form id="question-form"><label for="question" class="sr-only">你的问题</label><textarea id="question" rows="3" maxlength="2000" placeholder="例如：为什么要用平方误差，而不是误差直接相加？"></textarea><div class="question-actions"><span class="small muted">输入时暂停讲解，保留当前位置</span><button id="submit-question" class="button primary compact" type="submit">提问 ↗</button></div></form><button id="resume" class="button secondary full resume-button" hidden>疑问解决了，继续主线 →</button></section>
+          <section class="source-card" aria-labelledby="source-heading"><details><summary id="source-heading">对照原文 <span id="source-locator" class="small muted"></span></summary><blockquote id="source-excerpt"></blockquote></details><details id="exercise-details"><summary>Python 实践 <span class="small muted">听懂之后，动手验证</span></summary><p id="exercise-prompt"></p><pre><code id="exercise-code"></code></pre><details class="solution-details"><summary>查看参考解法</summary><pre><code id="exercise-solution"></code></pre></details><p class="small muted">练习在你自己的 Python 环境运行；此页面不会执行代码。</p></details><p id="no-exercise" class="small muted" hidden>这一段暂无代码练习，可先对照原文整理自己的理解。</p></section>
+        </div>
+      </section>
+      <footer class="main-footer"><span>走马观花 / Zouma · Conversation-Native Learning</span><span>行于途中，思入深处。</span></footer>
+    </main>
+  </div>
+
+  <dialog id="import-dialog" aria-labelledby="import-heading"><form id="import-form"><div class="dialog-heading"><div><div class="eyebrow">A NEW LEARNING JOURNEY</div><h2 id="import-heading">带上你的学习材料</h2></div><button id="close-import" type="button" class="icon-button" aria-label="关闭导入">×</button></div><p class="muted">一份讲义、一个章节，先从小段内容开始。</p><label class="field-label" for="import-title">课程名称</label><input id="import-title" name="title" maxlength="160" placeholder="例如：机器学习 · 第一讲"><label class="field-label" for="import-file">上传文件 <span class="muted small">或在下方粘贴文字</span></label><input id="import-file" name="file" type="file" accept=".txt,.md,.pdf"><p id="upload-limits" class="small muted">支持 UTF-8 TXT / MD 与文字版 PDF；扫描件需先转换为文字。</p><label class="field-label" for="source-text">材料正文</label><textarea id="source-text" name="source_text" rows="7" placeholder="粘贴你的讲义、教材片段或 Lecture 文字稿…"></textarea><p id="import-mode-note" class="small muted"></p><p id="import-error" class="form-error" role="alert" hidden></p><div class="dialog-actions"><button id="cancel-import" type="button" class="button secondary">取消</button><button id="submit-import" type="submit" class="button primary">生成学习课程 →</button></div></form></dialog>
+</body>
+</html>
