@@ -1,0 +1,39 @@
+name: 使用反馈 / Experience
+description: 分享走马 / Zouma 的真实体验，包括未能开始或中途放弃的原因。
+title: "[体验] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        走马 / Zouma 希望以对话支持主动思考和跨场景持续学习。
+        试用失败、没有开始或觉得不需要这个产品，同样是有用的反馈。
+        不需要为了反馈购买 API 服务。无需公开教材全文、个人信息、密钥或录音。
+        当前完整真实语音 P0 尚未验收；请区分演示体验和真实服务体验。
+  - type: textarea
+    id: experience
+    attributes:
+      label: 这次体验怎样？ / Tell us about your experience
+      description: 你原本想做什么、实际做到哪里，哪一步帮助了你或让你停下？
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: 体验方式 / Mode
+      options:
+        - 尚未运行，只阅读了介绍 / Read about it only
+        - 尝试启动，但没有成功 / Could not get started
+        - 演示与设备朗读 / Demo and browser speech
+        - 真实文本模型 / Real text model
+        - 真实实时语音 / Real realtime voice
+        - 其他或不确定 / Other or not sure
+  - type: textarea
+    id: continuity
+    attributes:
+      label: 思考与续学 / Thinking and continuity
+      description: 可选。提问或主动解释是否自然？讨论后、刷新后或下次打开时能否回到预期位置？
+  - type: textarea
+    id: next
+    attributes:
+      label: 最值得改的一件事 / One thing to improve
+      description: 可选。也欢迎说明你是否愿意继续使用，以及原因。

@@ -1,0 +1,42 @@
+name: 问题报告 / Bug
+description: 报告走马 / Zouma 的启动、导入、音频、讨论或进度恢复问题。
+title: "[问题] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请提供足够复现的最小内容，不必填写所有可选信息。
+        请勿上传密钥、.env、学习数据库、私人教材或原始录音；日志与截图请先去除个人信息。
+        演示、模拟测试和真实服务请分开说明。完整真实语音 P0 仍待验收。
+  - type: textarea
+    id: behavior
+    attributes:
+      label: 出现了什么问题？ / What happened?
+      description: 实际行为与预期行为分别是什么？如果涉及进度，请说明原本应恢复到哪一句。
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: 如何重现？ / Steps to reproduce
+      description: 可选。写出操作顺序；材料问题可附自己编写的简短公开示例。
+  - type: dropdown
+    id: mode
+    attributes:
+      label: 使用的模式 / Mode
+      options:
+        - 尚不确定 / Not sure
+        - 演示课程与设备朗读 / Demo and browser speech
+        - 真实文本模型 / Real text model
+        - 真实实时语音 / Real realtime voice
+        - 自动化或模拟测试 / Automated or mocked test
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境 / Environment
+      description: 可选。系统、浏览器、Python、项目版本，以及供应商和模型名称即可；不要填写密钥。
+  - type: textarea
+    id: evidence
+    attributes:
+      label: 补充证据 / Additional evidence
+      description: 可选。经过脱敏的错误信息、截图，或你观察到的断线/重复/跳句情况。

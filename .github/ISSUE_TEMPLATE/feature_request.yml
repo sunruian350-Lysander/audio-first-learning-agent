@@ -1,0 +1,28 @@
+name: 产品建议 / Idea
+description: 为走马 / Zouma 分享学习需求、产品想法或可以简化的地方；无需提供代码。
+title: "[建议] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        欢迎为走马 / Zouma 提供中文或 English 建议。尚未试用也可以提出需求，不需要先设计解决方案。
+        我们关注对话、主动思考与跨场景持续学习；行在途中，思入深处。
+        本项目仍在开发，真实模型与实时语音的完整 P0 路径尚未验收。
+        Issues 公开可见，请勿包含密钥、私人教材、数据库或录音。
+  - type: textarea
+    id: need
+    attributes:
+      label: 你想解决什么问题？ / What is the need?
+      description: 例如学习什么、在哪里使用、目前哪里费力。描述一个真实场景就很好。
+    validations:
+      required: true
+  - type: textarea
+    id: change
+    attributes:
+      label: 你希望怎样改进？ / What would help?
+      description: 可选。也可以告诉我们哪些功能可以删减，或你希望讨论的问题。
+  - type: textarea
+    id: outcome
+    attributes:
+      label: 怎样算对你有帮助？ / What would success look like?
+      description: 可选。比如更快开始、少看屏幕、讨论后准确续学，或更容易解释一个概念。
