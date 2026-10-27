@@ -59,7 +59,7 @@ def notebook_for(course: Course) -> dict:
     def code(text: str) -> dict:
         return {"cell_type": "code", "metadata": {}, "source": text, "execution_count": None, "outputs": []}
 
-    cells.append(markdown(f"# {course.title}\n\n由走马观花（Zouma）导出。代码尚未执行；请在你自己的 Python 环境中阅读和运行。"))
+    cells.append(markdown(f"# {course.title}\n\n由走马（Zouma）导出。代码尚未执行；请在你自己的 Python 环境中阅读和运行。"))
     for index, segment in enumerate(course.segments, 1):
         cells.append(markdown(f"## {index}. {segment.title}\n\n" + "\n\n".join(segment.script) +
                               f"\n\n**原文位置：** {segment.source_locator}"))
@@ -93,8 +93,8 @@ def create_app(data_dir: str | Path | None = None, provider: LearningProvider | 
         raise ValueError("AFL_VOICE_PROVIDER 仅支持 disabled 或 openai-realtime。")
     voice = voice_provider or (OpenAIRealtimeProvider(settings) if settings.voice_provider == "openai-realtime" else None)
     application = FastAPI(
-        title="走马观花 · Zouma",
-        description="Conversation-Native Adaptive Learning System · 对话原生自适应学习系统。行于途中，思入深处。",
+        title="走马 · Zouma",
+        description="Conversation-Native Adaptive Learning System · 对话原生自适应学习系统。行在途中，思入深处。",
         version="0.2.0",
     )
     application.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "[::1]", "testserver"])
