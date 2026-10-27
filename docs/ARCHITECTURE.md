@@ -1,6 +1,6 @@
-# 走马观花 · Zouma v0.2 架构与状态流
+# 走马 · Zouma v0.2 架构与状态流
 
-走马观花的产品定位是 Conversation-Native Adaptive Learning System。系统围绕“讲授 → 说话打断 → 多轮讨论 → 恢复主线”组织，以持久状态支持跨场景持续学习。课程位置是应用数据，不能依赖模型聊天记忆。沿用 Python/FastAPI、SQLite 和原生 HTML/CSS/JavaScript，先验证短课程闭环，再增加基础设施。知识追踪、自适应教学与多模态连续切换属于后续阶段，当前品牌更新不改变技术架构或完成状态。
+走马的产品定位是 Conversation-Native Adaptive Learning System。系统围绕“讲授 → 说话打断 → 多轮讨论 → 恢复主线”组织，以持久状态支持跨场景持续学习。课程位置是应用数据，不能依赖模型聊天记忆。沿用 Python/FastAPI、SQLite 和原生 HTML/CSS/JavaScript，先验证短课程闭环，再增加基础设施。知识追踪、自适应教学与多模态连续切换属于后续阶段，当前品牌更新不改变技术架构或完成状态。
 
 ```mermaid
 flowchart LR

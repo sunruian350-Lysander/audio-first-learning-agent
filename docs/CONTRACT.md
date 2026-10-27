@@ -1,6 +1,6 @@
-# 走马观花 · Zouma v0.2 API 与数据契约
+# 走马 · Zouma v0.2 API 与数据契约
 
-品牌名称为走马观花，英文名称为 Zouma，副标题为 Conversation-Native Learning。品牌更新仅调整显示名称和介绍；安装标识、`audio_learning` 模块、`AFL_` 环境变量、API 路径、数据库和已有课程状态保持兼容，详见 [BRAND](BRAND.md)。
+品牌名称为走马，英文名称为 Zouma，副标题为 Conversation-Native Learning。品牌更新仅调整显示名称和介绍；安装标识、`audio_learning` 模块、`AFL_` 环境变量、API 路径、数据库和已有课程状态保持兼容，详见 [BRAND](BRAND.md)。
 
 Python 3.11+、FastAPI 同源页面、SQLite 本地单用户。`create_app(data_dir=None, provider=None, voice_provider=None, settings=None)` 支持测试注入；生产入口为 `audio_learning.main:app`。所有模型/语音密钥只由服务端读取，配置接口不返回密钥。跨源浏览器写操作返回 403；Host 限定本地地址（另保留自动化测试的 `testserver`），拒绝 DNS 重绑定的外部域名。这不替代公开部署所需的鉴权。
 
