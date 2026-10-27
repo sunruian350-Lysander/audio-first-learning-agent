@@ -1,0 +1,23 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: python -m pip install -c requirements-lock.txt -e '.[dev]'
+      - run: python -m pytest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test tests/realtime.test.mjs tests/app.test.mjs
