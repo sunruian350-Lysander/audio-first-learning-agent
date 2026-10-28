@@ -28,6 +28,13 @@ Zouma is an open-source, conversation-native adaptive learning system driven by 
 
 ![走马 · Zouma 欢迎页](docs/zouma-welcome.png)
 
+## 团队与分工
+
+- [@sunruian350-Lysander](https://github.com/sunruian350-Lysander)：发起人兼主要维护者（Founder & Lead Maintainer），负责产品方向、技术开发与主要决策。
+- 朱思源 · Zhu Siyuan（[@2447066008-design](https://github.com/2447066008-design)）：联合创始人 · 市场研究与增长（Co-founder · Market Research & Growth），负责市场与用户需求调研、早期体验用户拓展、推广策略规划、反馈分析与研究报告，并参与项目发展策略规划。
+
+仓库写入、变更审核、合并与管理权限由项目发起人掌握；联合创始人署名不授予仓库写入或管理权限。欢迎按 [贡献指南](CONTRIBUTING.md) 通过 Issues 和 Pull Request 参与协作。
+
 ## 本地启动
 
 需要 Python 3.11+，在项目目录打开 PowerShell：
