@@ -78,6 +78,15 @@ $env:AFL_API_KEY = "你的文本服务密钥"
 $env:AFL_JSON_MODE = "true"
 ```
 
+使用 DeepSeek 官方文本接口时，也可在同一 PowerShell 窗口运行：
+
+```powershell
+.\setup_deepseek.ps1
+.\start.ps1
+```
+
+接入脚本隐藏输入密钥，发送一次可能计费的最小 JSON 请求，成功后才设置当前窗口的文本模型配置；默认模型为 `deepseek-flash`，可通过 `-Model` 指定其他可用模型。连接测试通过仍需在应用中验证实际课程生成。此配置用于课程生成和文字问答，实时语音仍需单独配置。
+
 实时语音使用独立的 `VoiceProvider`，当前实现 OpenAI Realtime WebRTC：
 
 ```powershell
@@ -90,7 +99,7 @@ $env:AFL_TRANSCRIPTION_MODEL = "gpt-4o-mini-transcribe"
 .\start.ps1
 ```
 
-语音密钥也可从服务端 `OPENAI_API_KEY` 读取。模型标识可修改，实际可用性取决于你的服务与账户权限。文本服务地址后追加 `/chat/completions`；语音地址后追加 `/realtime/calls`。名称类似的其他兼容服务不一定支持相同语音协议。
+语音密钥也可从服务端 `OPENAI_API_KEY` 读取。模型标识可修改，实际可用性取决于你的服务与账户权限。文本服务地址可填基础地址或完整的 `/chat/completions` 地址；语音地址后追加 `/realtime/calls`。名称类似的其他兼容服务不一定支持相同语音协议。
 
 首次配置后，导入一份短教材，点击「连接语音，继续学习」并授权麦克风。日常打开上次课程，仍从该主要入口继续；讲授时直接说话打断，连续追问后说“继续课程”，也可点击「回到刚才的句子，继续课程」。点击「结束语音并保存」关闭麦克风。页面不会自行开启麦克风或付费语音连接。使用 HTTPS 或本机 `localhost` / `127.0.0.1`，并允许浏览器播放声音。
 

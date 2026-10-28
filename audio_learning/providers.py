@@ -3,6 +3,7 @@
 import json
 import re
 from typing import Protocol
+from urllib.parse import urlsplit
 from uuid import uuid4
 
 import httpx
@@ -91,43 +92,100 @@ class CompatibleProvider:
     name = "compatible"
 
     def __init__(self, settings: Settings):
-        if not settings.model.strip():
+        if not isinstance(settings.model, str) or not settings.model.strip():
             raise ValueError("AFL_PROVIDER=compatible 时需要设置 AFL_MODEL。")
-        if not settings.api_base_url.startswith(("https://", "http://")):
-            raise ValueError("AFL_API_BASE_URL 必须是 http(s) URL。")
+        try:
+            base = settings.api_base_url.strip()
+            parsed = urlsplit(base)
+            port = parsed.port
+            if (parsed.scheme not in {"http", "https"} or not parsed.hostname
+                    or parsed.username is not None or parsed.password is not None
+                    or parsed.query or parsed.fragment or "?" in base or "#" in base
+                    or any(char.isspace() for char in base)
+                    or (port is not None and not 1 <= port <= 65535)):
+                raise ValueError("invalid API base URL")
+        except (AttributeError, TypeError, ValueError):
+            raise ValueError("AFL_API_BASE_URL 必须是有效的 http(s) 地址，不能包含账号、查询参数或片段。") from None
+        self._is_deepseek = parsed.hostname == "api.deepseek.com"
+        if self._is_deepseek and parsed.scheme != "https":
+            raise ValueError("DeepSeek 官方接口请使用 https://api.deepseek.com。")
+        base = base.rstrip("/")
+        self._completion_url = base if base.endswith("/chat/completions") else f"{base}/chat/completions"
         self.settings = settings
 
     def _complete(self, system: str, user: str, structured: bool = False) -> str:
         headers = {"Content-Type": "application/json"}
         if self.settings.api_key:
-            headers["Authorization"] = f"Bearer {self.settings.api_key}"
+            headers["Authorization"] = f"Bearer {self.settings.api_key.strip()}"
         payload = {
-            "model": self.settings.model,
+            "model": self.settings.model.strip(),
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}],
+            "stream": False,
         }
         if structured and self.settings.json_mode:
             payload["response_format"] = {"type": "json_object"}
+        if self._is_deepseek:
+            payload["thinking"] = {"type": "disabled"}
+            # Non-thinking defaults to only 8K. Keep course output explicit.
+            payload["max_tokens"] = 65536 if structured else 4096
         try:
             with httpx.Client(timeout=httpx.Timeout(120, connect=10)) as client:
-                response = client.post(f"{self.settings.api_base_url}/chat/completions", headers=headers, json=payload)
-            if response.status_code >= 400:
-                raise ProviderError(f"模型服务返回 HTTP {response.status_code}。请检查服务地址、模型名称、权限与额度。")
+                response = client.post(self._completion_url, headers=headers, json=payload)
+            if not 200 <= response.status_code < 300:
+                hints = {
+                    400: "请求格式或参数不被支持，请检查接口、模型与 JSON 输出设置。",
+                    401: "API Key 无效或缺失，请检查 AFL_API_KEY。",
+                    402: "API 余额不足，请检查账户额度。",
+                    403: "当前账户没有调用该接口或模型的权限。",
+                    404: "接口路径或模型不存在，请检查 AFL_API_BASE_URL 与 AFL_MODEL。",
+                    422: "模型不接受当前请求参数，请检查模型与 JSON 输出设置。",
+                    429: "模型服务限流，请稍后重试。",
+                    500: "模型服务内部错误，请稍后重试。",
+                    502: "上游网关异常，请检查服务与代理后重试。",
+                    503: "模型服务暂时繁忙，请稍后重试。",
+                    504: "上游网关等待超时，请稍后重试。",
+                }
+                hint = hints.get(response.status_code, "请检查接口地址、模型权限与网络配置。")
+                raise ProviderError(f"模型服务返回 HTTP {response.status_code}。{hint}")
             data = response.json()
-            choice = data["choices"][0]
-            content = choice["message"]["content"]
+            if not isinstance(data, dict):
+                raise ValueError("response is not an object")
+            choices = data.get("choices")
+            if not isinstance(choices, list) or not choices or not isinstance(choices[0], dict):
+                raise ValueError("missing choices")
+            choice = choices[0]
+            reason = choice.get("finish_reason")
+            if reason == "length":
+                raise ProviderError("模型输出达到 token 上限并被截断，请缩短教材后重试。")
+            if reason != "stop" and (self._is_deepseek or reason is not None):
+                raise ProviderError("模型生成未正常结束，未将中断内容作为完整结果返回。请稍后重试。")
+            message = choice.get("message")
+            if not isinstance(message, dict):
+                raise ValueError("missing message")
+            content = message.get("content")
             if not isinstance(content, str) or not content.strip():
-                raise ProviderError("模型服务没有返回文本。请确认模型支持文本 Chat Completions。")
-            if choice.get("finish_reason") == "length":
-                raise ProviderError("模型输出被截断，请缩短教材后重试。")
+                raise ProviderError("模型服务没有返回文本；JSON 输出可能为空，请重试并确认模型支持该输出格式。")
             if len(content) > 200000:
                 raise ProviderError("模型输出过长，请缩短教材后重试。")
             return content.strip()
         except ProviderError:
             raise
-        except httpx.TimeoutException as exc:
-            raise ProviderError("模型服务超时；课程位置已保留，请稍后重试。") from exc
-        except (httpx.HTTPError, ValueError, KeyError, IndexError, TypeError) as exc:
-            raise ProviderError("模型服务连接失败或响应格式不兼容，请检查服务配置。") from exc
+        except httpx.InvalidURL:
+            raise ProviderError("模型服务地址无效，请检查 AFL_API_BASE_URL。") from None
+        except httpx.ProxyError:
+            raise ProviderError("模型请求被代理服务器阻断；请检查系统代理或 VPN 设置。") from None
+        except httpx.ConnectTimeout:
+            raise ProviderError("连接模型服务超时；请检查网络、代理和 API 地址。") from None
+        except httpx.TimeoutException:
+            raise ProviderError("模型响应超时；请缩短教材或稍后重试。") from None
+        except httpx.ConnectError:
+            raise ProviderError("无法连接模型服务；请检查网络、DNS、代理、证书与 API 地址。") from None
+        except httpx.HTTPError:
+            raise ProviderError("模型请求发生网络异常；请检查网络与代理配置。") from None
+        except UnicodeError:
+            raise ProviderError("请求或响应包含无法编码的字符，请检查输入文本。") from None
+        except (ValueError, KeyError, IndexError, TypeError):
+            raise ProviderError("模型服务没有返回有效的 Chat Completions JSON，请检查接口地址与兼容性。") from None
 
     def build_segments(self, title: str, chunks: list[SourceChunk]) -> list[Segment]:
         system = (
