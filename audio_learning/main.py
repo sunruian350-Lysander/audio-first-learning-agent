@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+from urllib.parse import urlsplit
 from uuid import uuid4
 
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
@@ -10,6 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, Field
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+from .access import PersonalAccessMiddleware
 from .config import Settings
 from .ingestion import SourceError, extract_upload, text_chunks
 from .providers import CompatibleProvider, DemoProvider, LearningProvider, ProviderError, demo_exercise
@@ -98,7 +100,10 @@ def create_app(data_dir: str | Path | None = None, provider: LearningProvider | 
         description="Conversation-Native Adaptive Learning System · 对话原生自适应学习系统。行在途中，思入深处。",
         version="0.2.0",
     )
-    application.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "[::1]", "testserver"])
+    allowed_hosts = ["localhost", "127.0.0.1", "[::1]", "testserver"]
+    if settings.public_origin:
+        allowed_hosts.append(urlsplit(settings.public_origin).hostname)
+    application.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts)
     application.state.store = store
     application.state.provider = provider
     application.state.settings = settings
@@ -108,14 +113,17 @@ def create_app(data_dir: str | Path | None = None, provider: LearningProvider | 
 
     @application.middleware("http")
     async def same_origin_writes(request: Request, call_next):
-        # Block cross-origin browser writes to this local, single-user service.
-        # No Origin is normal for CLI clients and the test client.
+        # Native clients and CLI tools need no Origin; browser writes remain same-origin.
+        # The server deployment pins the public origin instead of trusting forwarded headers.
         if request.method in {"POST", "PUT", "PATCH", "DELETE"}:
             origin = request.headers.get("origin")
-            expected = f"{request.url.scheme}://{request.headers.get('host', '')}"
+            expected = settings.public_origin or f"{request.url.scheme}://{request.headers.get('host', '')}"
             if request.headers.get("sec-fetch-site") == "cross-site" or (origin and origin != expected):
-                return JSONResponse(status_code=403, content={"detail": "本地服务只接受同源页面的修改请求。"})
+                return JSONResponse(status_code=403, content={"detail": "服务只接受来自当前站点的修改请求。"})
         return await call_next(request)
+
+    application.add_middleware(PersonalAccessMiddleware, username=settings.access_user,
+                               password=settings.access_password)
 
     @application.exception_handler(NotFoundError)
     async def not_found(_request, _exc):
@@ -160,7 +168,7 @@ def create_app(data_dir: str | Path | None = None, provider: LearningProvider | 
             raise ProviderError("课程生成失败，没有保存不完整的课程。请检查模型配置或缩短教材。") from exc
         return store.add_course(course)
 
-    @application.get("/health")
+    @application.api_route("/health", methods=["GET", "HEAD"])
     def health():
         return {"status": "ok"}
 
