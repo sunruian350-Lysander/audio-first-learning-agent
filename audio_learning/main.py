@@ -17,6 +17,7 @@ from .schemas import AskQuestion, Course, CreateCourse, Session, UpdateSession
 from .storage import ConflictError, NotFoundError, Store, now
 from .orchestration import InvalidCommand, OrchestrationConflict, Orchestrator
 from .voice import OpenAIRealtimeProvider, VoiceError, VoiceProvider
+from .unicode_utils import normalize_unicode
 
 
 class VoiceConnect(BaseModel):
@@ -181,12 +182,12 @@ def create_app(data_dir: str | Path | None = None, provider: LearningProvider | 
 
     @application.post("/api/courses", status_code=201, response_model=Course)
     def create_course(body: CreateCourse):
-        return build_course(body.title, "粘贴文本", text_chunks(body.source_text), provider)
+        return build_course(normalize_unicode(body.title), "粘贴文本", text_chunks(body.source_text), provider)
 
     @application.post("/api/courses/upload", status_code=201, response_model=Course)
     def upload_course(file: UploadFile = File(...), title: str | None = Form(None)):
-        filename = Path(file.filename or "untitled.txt").name
-        actual_title = (title or Path(filename).stem).strip()
+        filename = normalize_unicode(Path(file.filename or "untitled.txt").name)
+        actual_title = normalize_unicode((title or Path(filename).stem).strip())
         if not actual_title or len(actual_title) > 160:
             raise HTTPException(422, "课程标题需为 1–160 字。")
         data = file.file.read(settings.max_upload_bytes + 1)
