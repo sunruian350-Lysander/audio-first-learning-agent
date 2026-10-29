@@ -1,0 +1,50 @@
+name: Server deployment
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  compose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare disposable local HTTPS configuration
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import subprocess
+          # A public test fixture, never a real account or provider credential.
+          hashed = subprocess.check_output([
+              "docker", "run", "--rm", "caddy:2-alpine", "caddy", "hash-password",
+              "--plaintext", "ci-only-password",
+          ], text=True).strip()
+          pathlib.Path(".env.server").write_text(
+              "ZOUMA_DOMAIN=localhost\nZOUMA_USER=ci\n"
+              + "ZOUMA_PASSWORD_HASH='" + hashed + "'\n",
+              encoding="utf-8",
+          )
+          PY
+      - name: Require a password before deployment
+        shell: bash
+        run: |
+          if docker compose --env-file deploy/server.env.example config --quiet; then
+            echo "An empty password hash must prevent deployment."
+            exit 1
+          fi
+          docker compose --env-file .env.server config --quiet
+      - name: Build and start the server stack
+        run: docker compose --env-file .env.server up -d --build --wait --wait-timeout 180
+      - name: Check real gateway and persistence after container replacement
+        run: python3 tests/server_smoke.py
+      - name: Show diagnostics on failure
+        if: failure()
+        run: docker compose --env-file .env.server logs --tail 150
+      - name: Stop the disposable stack
+        if: always()
+        run: docker compose --env-file .env.server down
