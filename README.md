@@ -63,6 +63,12 @@ python3 -m venv .venv
 
 默认不调用模型服务。先点击示例课程，验证设备朗读、文字提问、继续主线和刷新续学。演示课程使用模板与原文摘录，不能代表真实课程生成或真实语音教学质量。
 
+## 服务器部署与手机访问
+
+已提供 Render 单服务配置和 Docker Compose 服务器配置，适合个人通过同一个 HTTPS 网址在手机和电脑上使用。两种方式均保护课程与接口访问，并将学习记录保存到持久磁盘。当前交付为可部署源码，真实上线验收情况见 [VALIDATION](docs/VALIDATION.md)；仍为单用户共用一个数据空间。
+
+使用 Render 时按 [Render 上线指南](docs/RENDER_DEPLOYMENT.md) 部署仓库根目录的 `render.yaml`：一个 512 MB 服务、1 GB 持久磁盘、平台 HTTPS、随机访问密码，无需另买域名或部署密码网关。自有 Linux 服务器按 [服务器部署指南](docs/SERVER_DEPLOYMENT.md) 操作。本地启动方式保持不变；未来 iPhone App 将继续复用课程、学习检查点和语音协商接口。
+
 ## 配置真实模型与语音
 
 配置在启动服务的终端中生效；[.env.example](.env.example) 说明变量，程序不会自动加载 `.env`。密钥留在服务端，不要提交到仓库。
@@ -136,10 +142,12 @@ node --test tests/realtime.test.mjs tests/app.test.mjs
 - [品牌规范与兼容标识](docs/BRAND.md)
 - [架构、状态流与关键取舍](docs/ARCHITECTURE.md)
 - [API 和数据契约](docs/CONTRACT.md)
+- [个人服务器部署与 iPhone App 接入准备](docs/SERVER_DEPLOYMENT.md)
+- [Render 单服务上线与保存学习记录](docs/RENDER_DEPLOYMENT.md)
 - [实施顺序、P0 验收与 P1/P2](docs/ROADMAP.md)
 - [自动化与实际交互验证记录](docs/VALIDATION.md)
 - [本地接口文档](http://127.0.0.1:8000/docs)
 
-默认数据目录为 `data/`，可通过 `AFL_DATA_DIR` 修改；其中包含教材和讨论记录。当前仅供个人本机运行，默认监听 `127.0.0.1`。`.gitignore` 排除数据、环境文件和缓存。首次迁入当前工作区时保留旧源码与测试，没有复制旧虚拟环境、密钥或个人学习数据库；如需复用旧数据，请先停止服务并备份数据库，再配置其数据目录。
+默认数据目录为 `data/`，可通过 `AFL_DATA_DIR` 修改；其中包含教材和讨论记录。本地启动默认监听 `127.0.0.1`；服务器部署使用独立数据卷，并经过 HTTPS 与密码保护，步骤见部署指南。`.gitignore` 排除数据、环境文件和缓存。首次迁入当前工作区时保留旧源码与测试，没有复制旧虚拟环境、密钥或个人学习数据库；如需复用旧数据，请先停止服务并备份数据库，再配置其数据目录。
 
 接口依据：[OpenAI WebRTC](https://developers.openai.com/api/docs/guides/voice-webrtc)、[Realtime conversations](https://developers.openai.com/api/docs/guides/realtime-conversations)、[Structured Outputs](https://developers.openai.com/api/docs/guides/structured-outputs)。JSON object 模式仅保证 JSON 语法，课程结构仍由应用校验；协议已实现不代表真实供应商验证已通过。

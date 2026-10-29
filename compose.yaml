@@ -1,0 +1,66 @@
+name: zouma
+
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    init: true
+    # Only Caddy reaches this port through the private Compose network.
+    # Trust proxy headers here only; do not publish the application's port.
+    command: ["python", "-m", "uvicorn", "audio_learning.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1", "--proxy-headers", "--forwarded-allow-ips=*"]
+    environment:
+      AFL_PUBLIC_ORIGIN: https://${ZOUMA_DOMAIN:?Set ZOUMA_DOMAIN in .env.server}
+      AFL_DATA_DIR: /app/data
+      AFL_PROVIDER: ${AFL_PROVIDER:-demo}
+      AFL_API_BASE_URL: ${AFL_API_BASE_URL:-https://api.openai.com/v1}
+      AFL_API_KEY: ${AFL_API_KEY:-}
+      AFL_MODEL: ${AFL_MODEL:-}
+      AFL_JSON_MODE: ${AFL_JSON_MODE:-false}
+      AFL_VOICE_PROVIDER: ${AFL_VOICE_PROVIDER:-disabled}
+      AFL_REALTIME_API_BASE_URL: ${AFL_REALTIME_API_BASE_URL:-https://api.openai.com/v1}
+      AFL_REALTIME_API_KEY: ${AFL_REALTIME_API_KEY:-}
+      AFL_REALTIME_MODEL: ${AFL_REALTIME_MODEL:-gpt-realtime-2.1}
+      AFL_REALTIME_VOICE: ${AFL_REALTIME_VOICE:-marin}
+      AFL_TRANSCRIPTION_MODEL: ${AFL_TRANSCRIPTION_MODEL:-gpt-4o-mini-transcribe}
+    volumes:
+      - learning_data:/app/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    stop_grace_period: 30s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      ZOUMA_DOMAIN: ${ZOUMA_DOMAIN:?Set ZOUMA_DOMAIN in .env.server}
+      ZOUMA_USER: ${ZOUMA_USER:?Set ZOUMA_USER in .env.server}
+      ZOUMA_PASSWORD_HASH: ${ZOUMA_PASSWORD_HASH:?Set a password hash in .env.server}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    security_opt: [no-new-privileges:true]
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  learning_data:
+  caddy_data:
+  caddy_config:

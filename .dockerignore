@@ -1,0 +1,11 @@
+# Only application source and package metadata enter the image build context.
+# Local databases, credentials, Git history and work/ are excluded by default.
+**
+!audio_learning/
+!audio_learning/**
+audio_learning/**/__pycache__/
+audio_learning/**/*.pyc
+!pyproject.toml
+!requirements-lock.txt
+!README.md
+!LICENSE

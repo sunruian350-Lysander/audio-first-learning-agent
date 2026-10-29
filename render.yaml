@@ -1,0 +1,34 @@
+# One personal service; baseline compute $7/month + 1 GB disk $0.25/month.
+# Render supplies HTTPS and RENDER_EXTERNAL_URL. No separate gateway is needed.
+services:
+  - type: web
+    name: zouma-learning
+    runtime: python
+    plan: 0.5c-512mb
+    region: singapore
+    numInstances: 1
+    buildCommand: python -m pip install --no-cache-dir -c requirements-lock.txt .
+    startCommand: python -m uvicorn audio_learning.main:app --host 0.0.0.0 --port $PORT --workers 1 --proxy-headers --forwarded-allow-ips '*'
+    healthCheckPath: /health
+    autoDeployTrigger: "off"
+    disk:
+      name: zouma-learning-data
+      mountPath: /var/data
+      sizeGB: 1
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.14
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PORT
+        value: "10000"
+      - key: AFL_DATA_DIR
+        value: /var/data
+      - key: AFL_ACCESS_USER
+        value: owner
+      - key: AFL_ACCESS_PASSWORD
+        generateValue: true
+      - key: AFL_PROVIDER
+        value: demo
+      - key: AFL_VOICE_PROVIDER
+        value: disabled
