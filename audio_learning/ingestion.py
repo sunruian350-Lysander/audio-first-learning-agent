@@ -8,6 +8,7 @@ from pypdf import PdfReader
 
 from .config import Settings
 from .schemas import SourceChunk
+from .unicode_utils import normalize_unicode
 
 
 class SourceError(ValueError):
@@ -30,7 +31,7 @@ def split_sentences(text: str, max_chars: int = 220) -> list[str]:
 def text_chunks(text: str, locator_prefix: str = "原文", default_title: str = "讲解") -> list[SourceChunk]:
     # Normalize line endings without stripping the document: line numbers must
     # still refer to the user's original file, including leading blank lines.
-    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    text = normalize_unicode(text).replace("\r\n", "\n").replace("\r", "\n")
     if not text.strip():
         raise SourceError("没有可读取的正文。")
     chunks: list[SourceChunk] = []
@@ -95,7 +96,7 @@ def extract_upload(filename: str, data: bytes, settings: Settings) -> list[Sourc
         chunks: list[SourceChunk] = []
         char_count = 0
         for page_no, page in enumerate(reader.pages, 1):
-            text = (page.extract_text() or "").strip()
+            text = normalize_unicode(page.extract_text() or "").strip()
             char_count += len(text)
             if char_count > settings.max_source_chars:
                 raise SourceError("PDF 文字超过 60000 字，请拆分后导入。")
