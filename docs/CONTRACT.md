@@ -42,6 +42,12 @@ Python 3.11+、FastAPI 同源页面、SQLite 本地单用户。`create_app(data_
 
 ## HTTP 接口
 
+本地服务默认只接受本机 Host；个人服务器版通过 `AFL_PUBLIC_ORIGIN` 增加一个公开 HTTPS 站点。服务器网关要求所有外部请求先完成 HTTP Basic 认证，缺少或错误凭据返回 401，包括静态资源、`/health`、`/docs` 与 `/openapi.json`。本地开发和容器内部健康检查不增加认证。部署时不发布应用端口，详见 [服务器部署指南](SERVER_DEPLOYMENT.md)。
+
+Render 路径由应用内部执行 HTTP Basic 认证，不再另建网关。它保护首页、静态资源、全部课程与语音 API、文档；仅固定 `GET/HEAD /health` 可匿名读取最小健康状态，其他路径和方法不享有例外。`RENDER=true` 启动时必须具备有效公开地址与完整访问凭据，密码至少 24 位；默认公开地址来自 `RENDER_EXTERNAL_URL`。密码不出现在 `/api/config`。认证响应与成功响应均禁止缓存，详见 [Render 上线指南](RENDER_DEPLOYMENT.md)。
+
+浏览器写入必须来自当前站点；带外站 Origin 或 `Sec-Fetch-Site: cross-site` 的修改请求返回 403。原生客户端与命令行无需发送 Origin，仍须通过网关认证。认证与教学连接归属独立，`connection_id` 不提供访问授权；当前只有一个共享数据空间。
+
 | 方法与路径 | 请求 / 响应 |
 | --- | --- |
 | `GET /health` | `{status:"ok"}` |

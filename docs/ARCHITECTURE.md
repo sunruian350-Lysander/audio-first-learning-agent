@@ -76,6 +76,10 @@ SQLite 使用写事务比较 `revision` 后提交状态与事件。`claim` 生�
 
 ## 数据与扩展
 
+个人服务器部署沿用同一个 FastAPI/SQLite 后端，浏览器和未来 iPhone 客户端共享服务端课程与检查点。Caddy 负责 HTTPS 和整站个人密码，应用仅在容器网络内监听；`AFL_PUBLIC_ORIGIN` 显式固定公开地址及可信主机，不放开跨站写入。数据库置于独立持久卷，单进程启动。部署文件及原生客户端接入边界见 [SERVER_DEPLOYMENT](SERVER_DEPLOYMENT.md)。这仍不是多用户系统，用户身份与数据隔离需在开放独立账号前实现。
+
+Render 单服务路径使用平台 HTTPS 与应用内部 `PersonalAccessMiddleware`，无需 Caddy。`RENDER=true` 时必须配置个人用户名、随机长密码和公开 HTTPS 地址；未配置即拒绝启动。除固定的只读 `/health` 外整站认证，认证后的浏览器写入仍检查同源，响应禁止缓存。默认公开地址取平台 `RENDER_EXTERNAL_URL`，数据库写入 1 GB 持久磁盘 `/var/data`；保持一个服务实例和一个进程。`render.yaml` 使用 Python 原生运行环境，部署步骤见 [RENDER_DEPLOYMENT](RENDER_DEPLOYMENT.md)。
+
 `learning_states` 保存主线、课程散列、讨论锚点、回合和当前任务；`events` 保存每次学习命令、用户回合、已完成回答及观测延迟。实时状态保留最近 200 条回合，讨论提示使用最近 20 条；完整已记录回合仍在事件表。旧 `sessions/qa` 表保留；旧播放位置保存会在同一事务同步新主线，并使旧语音连接失效，避免切换降级模式后位置漂移。
 
 可观察的学习事件与掌握度推断必须分开。目前只记录收听/讨论行为，没有掌握度模型。P1 再加入解释、小测和实践证据，区分听过、复述、解释、迁移与独立解题；P2 据此安排教学策略和隔离代码实践。
