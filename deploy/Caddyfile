@@ -1,0 +1,16 @@
+https://{$ZOUMA_DOMAIN} {
+	basic_auth {
+		{$ZOUMA_USER} {$ZOUMA_PASSWORD_HASH}
+	}
+
+	header {
+		Cache-Control "no-store"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "same-origin"
+	}
+
+	reverse_proxy app:8000 {
+		# The gateway password is not a model-provider credential.
+		header_up -Authorization
+	}
+}
